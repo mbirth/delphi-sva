@@ -1,0 +1,29 @@
+     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
+00: PP PP PP PP PP PP PP pp pp pp pp pp pp pp ?? SS
+10: UU UU UU UU UU UU UU UU UU UU UU UU UU UU UU UU
+20: OO OO OO OO OO OO OO OO OO OO OO OO OO OO OO OO
+30: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+40: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+50: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+60: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+70: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
+80: MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM
+90: MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM MM
+a0: RR RR RR RR RR RR RR RR RR RR NN NN NN NN ?? ??
+b0: ?? ?? ?? ?? ?? ?? 0? ?? ?? ?? ?? ?? 0? 0? ?5 ??
+c0: ss ss ss ss ss ss ss ss ss ss ss ss ss ss ss ss
+d0: ss ss ss ss ss ss ss ss ss ss ss ss ss ss ss ss
+e0: tt tt tt tt tt tt tt tt tt tt tt tt tt tt tt tt
+f0: tt tt ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ??
+
+
+PP - Machine password
+pp - User password
+SS - Security setting (FF/4E: ask at startup; FE/00: don't ask)
+UU - UUID
+OO - OEM Info
+MM - Machine name
+RR - Revision
+NN - Model Name (4-character!)
+ss - Serial number
+tt - Timestamp
