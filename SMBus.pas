@@ -93,6 +93,13 @@ begin
         PCI_Structure.Vendor_Name := 'Intel®';
         PCI_Structure.Device_Name := '82801BA/ICH2';
       end;
+    $24838086:
+      begin
+        PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $20) and $FFF0;
+        PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
+        PCI_Structure.Vendor_Name := 'Intel®';
+        PCI_Structure.Device_Name := '82801CA/CAM';
+      end;
     $24C38086:
       begin
         PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $20) and $FFF0;
