@@ -55,8 +55,15 @@ type
     GroupSMBus: TGroupBox;
     ButtonSMBScan: TButton;
     Label1: TLabel;
+    ButtonSMBRead: TButton;
+    LabelSMBStatus: TLabel;
+    LabelSMBScan: TLabel;
+    Label13: TLabel;
+    ComboSMB: TComboBox;
     procedure ButtonOpenClick(Sender: TObject);
     procedure ButtonPCIScanClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure ButtonSMBReadClick(Sender: TObject);
     procedure ButtonSMBScanClick(Sender: TObject);
   private
     { Private declarations }
@@ -69,7 +76,7 @@ var
 
 implementation
 
-uses SMBus;
+uses SMBus, ZLPortIO;
 
 var
   MyPCI: PCI_Info;
@@ -221,6 +228,15 @@ begin
     else AForm.LabelCountry.Caption := '---';
 end;
 
+procedure DoAnalysis(d: array of byte);
+begin
+  ShowRAW(d);
+  CheckPwd(d);
+  CheckUUID(d);
+  CheckOEM(d);
+  CheckMachine(d);
+end;
+
 procedure TAForm.ButtonOpenClick(Sender: TObject);
 var f: file of byte;
     d: array[0..255] of byte;
@@ -231,12 +247,8 @@ begin
     Reset(f);
     for i:=0 to 255 do Read(f,d[i]);
     CloseFile(f);
-    ShowRAW(d);
-    CheckPwd(d);
-    CheckUUID(d);
-    CheckOEM(d);
-    CheckMachine(d);
-    PageControl1.ActivePageIndex := 0;
+    DoAnalysis(d);
+    AForm.PageControl1.ActivePageIndex := 0;
   end;
 end;
 
@@ -258,9 +270,60 @@ begin
   end;
 end;
 
+procedure TAForm.FormCreate(Sender: TObject);
+begin
+  if NOT ZlIOStarted then ShowMessage('The driver ZLPORTIO.SYS could not be loaded. The program won''t be able to read out SMBus under Windows NT/2000/XP! Make sure, the file is in path or in the program directory.');
+end;
+
+function PowerInt(base, exp: integer): Int64;
+begin
+  if (exp = 0) then Result := 1 else begin
+    Result := base;
+    while (exp>1) do begin
+      Result := Result * base;
+      Dec(exp);
+    end;
+  end;
+end;
+
+function HexToInt(x: string): int64;
+const hexset = '0123456789abcdef';
+var i, p: integer;
+begin
+  Result := 0;
+  if Length(x)<=8 then begin
+    x := LowerCase(x);
+    i := Pos('0x', x);
+    if (i>0) then Delete(x, 1, i+1);
+    for i:=1 to Length(x) do begin
+      p := Pos(x[i], hexset)-1;
+      if (p>0) then Result := Result + p*PowerInt(16, Length(x)-i);
+    end;
+  end;
+end;
+
+procedure TAForm.ButtonSMBReadClick(Sender: TObject);
+var i: integer;
+    dev: word;
+    d: TSMBData;
+begin
+  dev := HexToInt(AForm.ComboSMB.Text);
+  if dev=$57 then begin
+    Screen.Cursor := crHourGlass;
+    for i:=0 to 255 do begin
+      AForm.LabelSMBStatus.Caption := 'Now reading offset 0x'+IntToHex(i,2)+' ...';
+      Application.ProcessMessages;
+      d[i] := smbGetReg(MyPCI.SMB_Address, i, dev);
+    end;
+    Screen.Cursor := crDefault;
+  end;
+  DoAnalysis(d);
+  AForm.PageControl1.ActivePageIndex := 0;
+end;
+
 procedure TAForm.ButtonSMBScanClick(Sender: TObject);
 begin
-  //asd
+  AForm.LabelSMBScan.Caption := IntToHex(smbGetReg(MyPCI.SMB_Address, $01, $10), 2);
 end;
 
 end.

@@ -11,6 +11,7 @@ object AForm: TAForm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
+  OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object LabelHeading: TLabel
@@ -442,19 +443,72 @@ object AForm: TAForm
         Left = 0
         Top = 56
         Width = 489
-        Height = 105
+        Height = 129
         Caption = 'SMBus'
-        Enabled = False
         TabOrder = 1
+        object LabelSMBStatus: TLabel
+          Left = 88
+          Top = 48
+          Width = 393
+          Height = 13
+          AutoSize = False
+          Caption = 'Push button to read selected SMBus device.'
+          Enabled = False
+        end
+        object LabelSMBScan: TLabel
+          Left = 165
+          Top = 20
+          Width = 316
+          Height = 13
+          AutoSize = False
+          Caption = 'Push button to scan SMBus for devices.'
+          Enabled = False
+        end
+        object Label13: TLabel
+          Left = 10
+          Top = 19
+          Width = 37
+          Height = 13
+          Caption = 'Device:'
+          Enabled = False
+        end
         object ButtonSMBScan: TButton
-          Left = 8
+          Left = 116
           Top = 16
-          Width = 75
-          Height = 17
-          Caption = 'Enum SMBus'
+          Width = 45
+          Height = 21
+          Caption = 'Scan'
           Enabled = False
           TabOrder = 0
           OnClick = ButtonSMBScanClick
+        end
+        object ButtonSMBRead: TButton
+          Left = 8
+          Top = 40
+          Width = 75
+          Height = 25
+          Caption = 'Read'
+          Enabled = False
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'MS Sans Serif'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+          OnClick = ButtonSMBReadClick
+        end
+        object ComboSMB: TComboBox
+          Left = 56
+          Top = 16
+          Width = 57
+          Height = 21
+          Enabled = False
+          ItemHeight = 13
+          TabOrder = 2
+          Text = '0x57'
+          Items.Strings = (
+            '0x57')
         end
       end
     end

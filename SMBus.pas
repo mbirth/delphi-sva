@@ -2,7 +2,7 @@ unit SMBus;
 
 interface
 
-  uses Forms, StdCtrls;
+  uses Forms, StdCtrls, ZLPortIO;
 
   type
     PCI_Info = record
@@ -16,8 +16,11 @@ interface
       Fun: byte;
       SMB_Address: word;
     end;
+    TSMBData = array[0..255] of byte;
 
     function Scan_PCI(Application: TApplication; Status: TLabel): PCI_Info;
+    function smbGetReg(BaseAddr: word; Reg: byte; Slave: byte): word;
+    function smbGetArray(BaseAddr: word; Reg: byte; Slave: byte; len: byte): TSMBData;
 
 implementation
 
@@ -27,10 +30,10 @@ const
   RW_WRITE = 0;
   RW_READ = 1;
 
-function DlPortReadPortUchar(Port: cardinal): cardinal; stdcall; external'dlportio.dll';
-function DlPortReadPortUlong(Port: cardinal): cardinal; stdcall; external'dlportio.dll';
-procedure DlPortWritePortUchar(Port: cardinal; Value: cardinal); stdcall; external'dlportio.dll';
-procedure DlPortWritePortUlong(Port: cardinal; Value: cardinal); stdcall; external'dlportio.dll';
+// function DlPortReadPortUchar(Port: cardinal): cardinal; stdcall; external'dlportio.dll';
+// function DlPortReadPortUlong(Port: cardinal): cardinal; stdcall; external'dlportio.dll';
+// procedure DlPortWritePortUchar(Port: cardinal; Value: cardinal); stdcall; external'dlportio.dll';
+// procedure DlPortWritePortUlong(Port: cardinal; Value: cardinal); stdcall; external'dlportio.dll';
 
 // http://www.tsgroup.it/smbus/index.htm
 function Get_PCI_Reg(Bus: cardinal;Dev: cardinal;Fun: cardinal;Reg: cardinal): cardinal;
@@ -42,10 +45,14 @@ begin
   cc := cc or ((Dev and $1F) shl 11);//Dev
   cc := cc or ((Fun and $07) shl 8);//func
   cc := cc or ((Reg and $FC));//Reg
-  t := DlPortReadPortUlong($CF8);
-  DlPortWritePortUlong($CF8, cc);
-  Result := DlPortReadPortUlong($CFC);
-  DlPortWritePortUlong($CF8, t);
+  //t := DlPortReadPortUlong($CF8);
+  //DlPortWritePortUlong($CF8, cc);
+  //Result := DlPortReadPortUlong($CFC);
+  //DlPortWritePortUlong($CF8, t);
+  t := PortReadL($CF8);
+  PortWriteL($CF8, cc);
+  Result := PortReadL($CFC);
+  PortWriteL($CF8, t);
 end;
 
 // http://www.tsgroup.it/smbus/index.htm
@@ -85,6 +92,13 @@ begin
         PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
         PCI_Structure.Vendor_Name := 'Intel®';
         PCI_Structure.Device_Name := '82801BA/ICH2';
+      end;
+    $24C38086:
+      begin
+        PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $20) and $FFF0;
+        PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
+        PCI_Structure.Vendor_Name := 'Intel®';
+        PCI_Structure.Device_Name := '82801DB/DBM';
       end;
   else
     PCI_Structure.SMB_Address := 0;
@@ -138,23 +152,29 @@ procedure smbWaitForFree(BaseAddr: word);
 var
   Status: byte;
 begin
-  Status := DlPortReadPortUchar(BaseAddr);
+  //Status := DlPortReadPortUchar(BaseAddr);
+  Status := PortReadB(BaseAddr);
   while (Status and 1) <> 0 do begin
     Application.ProcessMessages;
-    Status := DlPortReadPortUchar(BaseAddr);
+    //Status := DlPortReadPortUchar(BaseAddr);
+    Status := PortReadB(BaseAddr);
   end;
-  if (Status and $1e) <> 0 then
-    DlPortWritePortUchar(BaseAddr, Status);
+  if (Status and $1e) <> 0 then begin
+    //DlPortWritePortUchar(BaseAddr, Status);
+    PortWriteB(BaseAddr, Status);
+  end;
 end;
 
 procedure smbWaitForEnd(BaseAddr: word);
 var
   Status: byte;
 begin
-  Status := DlPortReadPortUchar(BaseAddr);
+  //Status := DlPortReadPortUchar(BaseAddr);
+  Status := PortReadB(BaseAddr);
   while (Status and 1) = 1 do begin
     Application.ProcessMessages;
-    Status := DlPortReadPortUchar(BaseAddr);
+    //Status := DlPortReadPortUchar(BaseAddr);
+    Status := PortReadB(BaseAddr);
   end;
 end;
 
@@ -163,14 +183,18 @@ var
   Dump1: word;
 begin
   smbWaitForFree(BaseAddr);
-  DlPortWritePortUchar(BaseAddr + 3, CMD);
-  DlPortWritePortUchar(BaseAddr + 4, (Slave shl 1) or RW);
-  DlPortWritePortUchar(BaseAddr + 2, $48);
-  sleep(1);
-  Application.ProcessMessages;
+//  DlPortWritePortUchar(BaseAddr + 3, CMD);
+//  DlPortWritePortUchar(BaseAddr + 4, (Slave shl 1) or RW);
+//  DlPortWritePortUchar(BaseAddr + 2, $48);
+  PortWriteB(BaseAddr + 3, CMD);
+  PortWriteB(BaseAddr + 4, (Slave shl 1) or RW);
+  PortWriteB(BaseAddr + 2, $48);
+  Sleep(1);
   smbWaitForEnd(BaseAddr);
-  Dump1 := ( DlPortReadPortUchar(BaseAddr + 6) shl 8);
-  Dump1 := Dump1 or DlPortReadPortUchar(BaseAddr + 5);
+//  Dump1 := ( DlPortReadPortUchar(BaseAddr + 6) shl 8);
+//  Dump1 := Dump1 or DlPortReadPortUchar(BaseAddr + 5);
+  Dump1 := ( PortReadB(BaseAddr + 6) shl 8);
+  Dump1 := Dump1 or PortReadB(BaseAddr + 5);
   Result := Dump1;
 end;
 
@@ -179,10 +203,32 @@ var
   Data: cardinal;
 begin
   smbWaitForFree(BaseAddr);
-  DlPortWritePortUchar(BaseAddr + 5, 0);
-  DlPortWritePortUchar(BaseAddr + 6, 0);
+//  DlPortWritePortUchar(BaseAddr + 5, 0);
+//  DlPortWritePortUchar(BaseAddr + 6, 0);
+  PortWriteB(BaseAddr + 5, 0);
+  PortWriteB(BaseAddr + 6, 0);
   Data := smbCallBus(BaseAddr, Reg, Slave, RW_READ);
   Result := (Data and $ff);
+end;
+
+function smbGetArray(BaseAddr: word; Reg: byte; Slave: byte; len: byte): TSMBData;
+var Data: cardinal;
+    i: byte;
+begin
+  smbWaitForFree(BaseAddr);
+  PortWriteB(BaseAddr + 5, 0);
+  PortWriteB(BaseAddr + 6, 0);
+  for i:=reg to reg+len-1 do begin
+    smbWaitForFree(BaseAddr);
+    PortWriteB(BaseAddr + 3, i);
+    PortWriteB(BaseAddr + 4, (Slave shl 1) or RW_READ);
+    PortWriteB(BaseAddr + 2, $48);
+    Sleep(1);
+    smbWaitForEnd(BaseAddr);
+    Data := ( PortReadB(BaseAddr + 6) shl 8);
+    Data := Data or PortReadB(BaseAddr + 5);
+    Result[i] := Data AND $FF;
+  end;
 end;
 
 function smbGetAddress(BaseAddr: word): string;
@@ -194,8 +240,10 @@ begin
   Cheque := '';
   for idx := $20 to $4F do begin
     smbWaitForFree(BaseAddr);
-    DlPortWritePortUchar(BaseAddr + 5, 0);
-    DlPortWritePortUchar(BaseAddr + 6, 0);
+//    DlPortWritePortUchar(BaseAddr + 5, 0);
+//    DlPortWritePortUchar(BaseAddr + 6, 0);
+    PortWriteB(BaseAddr + 5, 0);
+    PortWriteB(BaseAddr + 6, 0);
     Data := smbCallBus(BaseAddr, 0, idx, RW_READ);
     if (Data and $FF) <> 0 then begin
       Cheque := Cheque + IntToHex(idx,2);
