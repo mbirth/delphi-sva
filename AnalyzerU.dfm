@@ -42,7 +42,7 @@ object AForm: TAForm
     Top = 48
     Width = 497
     Height = 329
-    ActivePage = SheetSMBus
+    ActivePage = SheetAbout
     TabOrder = 1
     object SheetParsed: TTabSheet
       Caption = 'Parsed info'
@@ -586,6 +586,10 @@ object AForm: TAForm
             'interesting information. Also the password is decrypted, just in' +
             ' '
           'case you forgot your machine password.'
+          ''
+          '2004-03-31: added support for reading out the SMBus directly '
+          'from Windows. Make sure the file ZLPORTIO.SYS is in this '
+          'program'#39's directory or in the search path.'
           ''
           'Have fun!'
           ''

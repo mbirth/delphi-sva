@@ -323,7 +323,7 @@ end;
 
 procedure TAForm.ButtonSMBScanClick(Sender: TObject);
 begin
-  AForm.LabelSMBScan.Caption := IntToHex(smbGetReg(MyPCI.SMB_Address, $01, $10), 2);
+  AForm.LabelSMBScan.Caption := 'Not yet functioning';
 end;
 
 end.
