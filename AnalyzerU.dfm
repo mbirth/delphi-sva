@@ -11,6 +11,7 @@ object AForm: TAForm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
+  OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object LabelHeading: TLabel
@@ -396,23 +397,19 @@ object AForm: TAForm
         ParentFont = False
         TabOrder = 0
       end
+      object ButtonSaveDump: TButton
+        Left = 192
+        Top = 248
+        Width = 89
+        Height = 25
+        Caption = 'Save dump...'
+        TabOrder = 1
+        OnClick = ButtonSaveDumpClick
+      end
     end
     object SheetSMBus: TTabSheet
       Caption = 'SMBus'
       ImageIndex = 3
-      object Label1: TLabel
-        Left = 96
-        Top = 272
-        Width = 306
-        Height = 29
-        Caption = 'UNDER CONSTRUCTION'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -24
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
       object GroupBox5: TGroupBox
         Left = 0
         Top = 0
@@ -606,10 +603,18 @@ object AForm: TAForm
   end
   object OpenDialog1: TOpenDialog
     Filter = 
-      'Sony 0x57 dump|SMBUS57.DAT|Other dumps (SMBUS*.DAT)|SMBUS*.DAT|A' +
-      'll files (*.*)|*.*'
+      'Sony 0x57 dump|SMBUS57.DAT|Other dumps (*.DAT)|*.DAT|All files (' +
+      '*.*)|*.*'
     Options = [ofHideReadOnly, ofPathMustExist, ofFileMustExist, ofEnableSizing, ofDontAddToRecent]
     Left = 336
+    Top = 8
+  end
+  object SaveDialog1: TSaveDialog
+    Filter = 
+      'Sony 0x57 dump|SMBUS57.DAT|Other dumps (*.DAT)|*.DAT|All files (' +
+      '*.*)|*.*'
+    Options = [ofOverwritePrompt, ofHideReadOnly, ofPathMustExist, ofEnableSizing]
+    Left = 288
     Top = 8
   end
 end

@@ -54,16 +54,19 @@ type
     LabelStatus: TLabel;
     GroupSMBus: TGroupBox;
     ButtonSMBScan: TButton;
-    Label1: TLabel;
     ButtonSMBRead: TButton;
     LabelSMBStatus: TLabel;
     LabelSMBScan: TLabel;
     Label13: TLabel;
     ComboSMB: TComboBox;
+    ButtonSaveDump: TButton;
+    SaveDialog1: TSaveDialog;
     procedure ButtonOpenClick(Sender: TObject);
     procedure ButtonPCIScanClick(Sender: TObject);
     procedure ButtonSMBReadClick(Sender: TObject);
     procedure ButtonSMBScanClick(Sender: TObject);
+    procedure ButtonSaveDumpClick(Sender: TObject);
+    procedure FormShow(Sender: TObject);
   private
     { Private declarations }
   public
@@ -79,6 +82,7 @@ uses SMBus, ZLPortIO;
 
 var
   MyPCI: PCI_Info;
+  raw: array[0..255] of byte;
 
 {$R *.dfm}
 
@@ -230,7 +234,6 @@ end;
 
 procedure DoAnalysis(d: array of byte);
 begin
-  ShowRAW(d);
   CheckPwd(d);
   CheckUUID(d);
   CheckOEM(d);
@@ -245,8 +248,12 @@ begin
   if OpenDialog1.Execute then begin
     AssignFile(f, OpenDialog1.FileName);
     Reset(f);
-    for i:=0 to 255 do Read(f,d[i]);
+    for i:=0 to 255 do begin
+      Read(f,d[i]);
+      raw[i] := d[i];
+    end;
     CloseFile(f);
+    ShowRAW(d);
     DoAnalysis(d);
     AForm.PageControl1.ActivePageIndex := 0;
   end;
@@ -305,22 +312,44 @@ var i: integer;
     d: TSMBData;
 begin
   dev := HexToInt(AForm.ComboSMB.Text);
-  if dev=$57 then begin
-    Screen.Cursor := crHourGlass;
-    for i:=0 to 255 do begin
-      AForm.LabelSMBStatus.Caption := 'Now reading offset 0x'+IntToHex(i,2)+' ...';
-      Application.ProcessMessages;
-      d[i] := smbGetReg(MyPCI.SMB_Address, i, dev);
-    end;
-    Screen.Cursor := crDefault;
+  Screen.Cursor := crHourGlass;
+  for i:=0 to 255 do begin
+    AForm.LabelSMBStatus.Caption := 'Now reading offset 0x'+IntToHex(i,2)+' ...';
+    Application.ProcessMessages;
+    d[i] := smbGetReg(MyPCI.SMB_Address, i, dev);
+    raw[i] := d[i];
   end;
-  DoAnalysis(d);
-  AForm.PageControl1.ActivePageIndex := 0;
+  Screen.Cursor := crDefault;
+  ShowRAW(d);
+  if dev=$57 then begin
+    DoAnalysis(d);
+    AForm.PageControl1.ActivePageIndex := 0;
+  end else begin
+    AForm.PageControl1.ActivePageIndex := 1;
+  end;
 end;
 
 procedure TAForm.ButtonSMBScanClick(Sender: TObject);
 begin
   AForm.LabelSMBScan.Caption := 'Not yet functioning';
+end;
+
+procedure TAForm.ButtonSaveDumpClick(Sender: TObject);
+var f: file of byte;
+    i: integer;
+begin
+  if SaveDialog1.Execute then begin
+    AssignFile(f, SaveDialog1.FileName);
+    Rewrite(f);
+    for i:=0 to 255 do Write(f,raw[i]);
+    CloseFile(f);
+  end;
+end;
+
+procedure TAForm.FormShow(Sender: TObject);
+var i: integer;
+begin
+  for i:=0 to 255 do raw[i] := 0;
 end;
 
 end.
