@@ -93,6 +93,13 @@ begin
         PCI_Structure.Vendor_Name := 'Intel®';
         PCI_Structure.Device_Name := '82801BA/ICH2';
       end;
+    $24538086:
+      begin
+        PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $20) and $FFF0;
+        PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
+        PCI_Structure.Vendor_Name := 'Intel®';
+        PCI_Structure.Device_Name := '82801E';
+      end;
     $24838086:
       begin
         PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $20) and $FFF0;
@@ -106,6 +113,34 @@ begin
         PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
         PCI_Structure.Vendor_Name := 'Intel®';
         PCI_Structure.Device_Name := '82801DB/DBM';
+      end;
+    $24D38086:
+      begin
+        PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $20) and $FFF0;
+        PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
+        PCI_Structure.Vendor_Name := 'Intel®';
+        PCI_Structure.Device_Name := '82801EB/ER (ICH5/ICH5R)';
+      end;
+    $25A48086:
+      begin
+        PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $20) and $FFF0;
+        PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
+        PCI_Structure.Vendor_Name := 'Intel®';
+        PCI_Structure.Device_Name := '6300ESB';
+      end;
+    $266A8086:
+      begin
+        PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $20) and $FFF0;
+        PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
+        PCI_Structure.Vendor_Name := 'Intel®';
+        PCI_Structure.Device_Name := '82801FB/FBM/FR/FW/FRW (ICH6)';
+      end;
+    $76038086:
+      begin
+        PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $20) and $FFF0;
+        PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
+        PCI_Structure.Vendor_Name := 'Intel®';
+        PCI_Structure.Device_Name := '82372FB PIIX5';
       end;
     $30571106:
       begin
