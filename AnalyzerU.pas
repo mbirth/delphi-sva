@@ -88,6 +88,7 @@ var i: integer;
 begin
   tmph := '';
   tmpb := '';
+  AForm.ListRAW.Clear;
   for i:=0 to 255 do begin
     tmph := tmph + ' ' + IntToHex(x[i], 2);
     if (x[i] IN [$20..$FF]) then tmpb := tmpb + Chr(x[i]) else tmpb := tmpb + '.';
