@@ -62,7 +62,6 @@ type
     ComboSMB: TComboBox;
     procedure ButtonOpenClick(Sender: TObject);
     procedure ButtonPCIScanClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
     procedure ButtonSMBReadClick(Sender: TObject);
     procedure ButtonSMBScanClick(Sender: TObject);
   private
@@ -261,18 +260,15 @@ end;
 
 procedure TAForm.ButtonPCIScanClick(Sender: TObject);
 begin
-  Screen.Cursor := crHourGlass;
-  MyPCI := Scan_PCI(Application, AForm.LabelStatus);
-  Screen.Cursor := crDefault;
-  if (MyPCI.SMB_Address <> 0) AND (MyPCI.Vendor_Name <> '') then begin
-    AForm.LabelStatus.Caption := 'SMBus-Controller: '+MyPCI.Vendor_Name+' '+MyPCI.Device_Name+' Rev '+IntToStr(MyPCI.Rev)+' at addr 0x'+IntToHex(MyPCI.SMB_Address,4);
-    EnableGroup(AForm.GroupSMBus, true);
-  end;
-end;
-
-procedure TAForm.FormCreate(Sender: TObject);
-begin
-  if NOT ZlIOStarted then ShowMessage('The driver ZLPORTIO.SYS could not be loaded. The program won''t be able to read out SMBus under Windows NT/2000/XP! Make sure, the file is in path or in the program directory.');
+  if ZlIOStarted then begin
+    Screen.Cursor := crHourGlass;
+    MyPCI := Scan_PCI(Application, AForm.LabelStatus);
+    Screen.Cursor := crDefault;
+    if (MyPCI.SMB_Address <> 0) AND (MyPCI.Vendor_Name <> '') then begin
+      AForm.LabelStatus.Caption := 'SMBus-Controller: '+MyPCI.Vendor_Name+' '+MyPCI.Device_Name+' Rev '+IntToStr(MyPCI.Rev)+' at addr 0x'+IntToHex(MyPCI.SMB_Address,4);
+      EnableGroup(AForm.GroupSMBus, true);
+    end;
+  end else ShowMessage('The driver ZLPORTIO.SYS could not be loaded. The program won''t be able to read out SMBus under Windows NT/2000/XP! Make sure, the file is in path or in the program directory.');
 end;
 
 function PowerInt(base, exp: integer): Int64;

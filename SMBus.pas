@@ -20,7 +20,7 @@ interface
 
     function Scan_PCI(Application: TApplication; Status: TLabel): PCI_Info;
     function smbGetReg(BaseAddr: word; Reg: byte; Slave: byte): word;
-    function smbGetArray(BaseAddr: word; Reg: byte; Slave: byte; len: byte): TSMBData;
+    function smbGetArray(BaseAddr: word; regfrom: byte; Slave: byte; regto: byte): TSMBData;
 
 implementation
 
@@ -99,6 +99,13 @@ begin
         PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
         PCI_Structure.Vendor_Name := 'Intel®';
         PCI_Structure.Device_Name := '82801DB/DBM';
+      end;
+    $30571106:
+      begin
+        PCI_Structure.SMB_Address := Get_PCI_Reg(Bus, Dev, Fun, $90) and $FFF0;
+        PCI_Structure.Rev := Get_PCI_Reg(Bus, Dev, Fun, 8) and $FF;
+        PCI_Structure.Vendor_Name := 'VIA®';
+        PCI_Structure.Device_Name := 'VT82C686A/B';
       end;
   else
     PCI_Structure.SMB_Address := 0;
@@ -211,14 +218,14 @@ begin
   Result := (Data and $ff);
 end;
 
-function smbGetArray(BaseAddr: word; Reg: byte; Slave: byte; len: byte): TSMBData;
+function smbGetArray(BaseAddr: word; regfrom: byte; Slave: byte; regto: byte): TSMBData;
 var Data: cardinal;
     i: byte;
 begin
   smbWaitForFree(BaseAddr);
   PortWriteB(BaseAddr + 5, 0);
   PortWriteB(BaseAddr + 6, 0);
-  for i:=reg to reg+len-1 do begin
+  for i:=regfrom to regto do begin
     smbWaitForFree(BaseAddr);
     PortWriteB(BaseAddr + 3, i);
     PortWriteB(BaseAddr + 4, (Slave shl 1) or RW_READ);
